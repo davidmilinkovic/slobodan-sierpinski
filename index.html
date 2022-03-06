@@ -1,0 +1,155 @@
+<script>
+
+    var img = new Image();
+    img.src = "slobodan.png";
+
+    function drawEquilateralTriangle(ctx, x, y, height) {
+        ctx.beginPath();
+        var side = 2 * height / Math.sqrt(3);
+        ctx.moveTo(x, y - height / 2);
+        ctx.lineTo(x - side / 2, y + height / 2);
+        ctx.lineTo(x + side / 2, y + height / 2);
+        ctx.closePath();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#fff';        
+        ctx.fill();
+    }
+
+    function drawReversedEquilateralTriangle(ctx, x, y, height, color = "#fff") {
+        ctx.beginPath();        
+        var side = 2 * height / Math.sqrt(3);
+        ctx.moveTo(x, y + height / 2);
+        ctx.lineTo(x - side / 2, y - height / 2);
+        ctx.lineTo(x + side / 2, y - height / 2);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        // add picture to canvas at (x, y)
+        
+        if(height > 200) {
+            var slobodansDimension = height / 3;
+            ctx.drawImage(img, x - slobodansDimension / 2, y - slobodansDimension / 2 - height / 6, slobodansDimension, slobodansDimension);        
+        }            
+
+    }
+
+    class Triangle {
+
+        constructor(x, y, height, position = 0) {
+            this.x = x;
+            this.y = y;
+            this.height = height;
+            this.children = [];
+        }
+
+        checkIfVisible() {
+            return this.y + this.height < 1.5 * Math.max(canvas.width, canvas.height);
+        }
+
+        draw(ctx) {
+
+            var colorNorm = 1.5 * Math.max(canvas.width, canvas.height);
+            var red = 0, green = 0, blue = 0;
+            if(this.height < colorNorm / 8) {
+                red = this.height / (colorNorm  / 8) * 255;
+            }
+            else if(this.height < colorNorm / 4) {
+                red = 255 - (this.height - colorNorm / 8) / (colorNorm  / 8) * 255;
+                green = (this.height - colorNorm / 8) / (colorNorm  / 8) * 255;
+            }
+            else if(this.height < colorNorm / 2) {
+                green = 255 - (this.height - colorNorm / 4) / (colorNorm  / 4) * 255;
+                blue = (this.height - colorNorm / 4) / (colorNorm  / 4) * 255;
+            }
+            else {
+                blue = 255 - (this.height - colorNorm / 2) / (colorNorm  / 2) * 255;
+            }
+            var color = "rgb(" + red + ", " + green + ", " + blue + ")";
+
+            drawReversedEquilateralTriangle(ctx, this.x, this.y + 0.75 * this.height, this.height / 2, color);
+
+            if (this.height > 30) {
+                var side = 2 * this.height / Math.sqrt(3);
+                var childHeight = this.height / 2;
+
+                if (this.children.length == 0) {
+                    var child1 = new Triangle(this.x - side / 4, this.y + childHeight, childHeight);
+                    var child2 = new Triangle(this.x + side / 4, this.y + childHeight, childHeight);
+                    var child3 = new Triangle(this.x, this.y, childHeight);
+                    this.children.push(child1);
+                    this.children.push(child2);
+                    this.children.push(child3);
+                }
+                else {
+                    this.children[0].x = this.x - side / 4;
+                    this.children[0].y = this.y + childHeight;
+                    this.children[0].height = childHeight;
+                    this.children[1].x = this.x + side / 4;
+                    this.children[1].y = this.y + childHeight;
+                    this.children[1].height = childHeight;
+                    this.children[2].x = this.x;
+                    this.children[2].y = this.y;
+                    this.children[2].height = childHeight;
+                }
+
+                for (var i = 0; i < this.children.length; i++) {
+                    this.children[i].draw(ctx);
+                }
+            }
+
+        }
+    }
+
+    var start = new Date();
+
+    var root = null;
+
+    function clock() {
+        var now = new Date();
+        var seconds = now.getSeconds() + now.getMilliseconds() / 1000;
+
+        var ctx = document.getElementById('canvas').getContext('2d');
+        ctx.save();
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        ctx.scale(1, 1);
+
+        var width = ctx.canvas.width;
+        var height = ctx.canvas.height;
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = "#263238";
+        ctx.fillRect(0, 0, width, height);
+        ctx.strokeStyle = "#fff";
+        
+
+        ctx.translate(width / 2, height / 2);
+        ctx.rotate(seconds * Math.PI / 30);
+
+        var t = root;
+        var delta = t.height * 0.01;
+        t.height += delta;
+
+        drawEquilateralTriangle(ctx, t.x, t.y + t.height / 2, t.height);
+        t.draw(ctx);
+
+        if (!t.checkIfVisible()) {
+            root = t.children[2];
+        }
+
+
+        ctx.restore();
+
+        window.requestAnimationFrame(clock);
+    }
+
+    root = new Triangle(0, -window.innerHeight / 2, 200);
+    window.requestAnimationFrame(clock);
+</script>
+
+<body style="padding: 0px; margin: 0px">
+    <canvas id="canvas"></canvas>
+</body>
