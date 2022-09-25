@@ -1,5 +1,5 @@
 # Slobodan Sierpinski
 
-**index.html** je fajl u kojem se nalazi kompletan kod. Estetika ovog trougla predstavlja svojevrstan omaž narodnom heroju Živković Slobodanu.
+Sierpinski Triangle simulation in HTML5 Canvas.
 
-Demo možete videti [ovde](https://slobodan-sierpinski.web.app/). 
+Demo: [ovde](https://slobodan-sierpinski.web.app/). 
